@@ -1,0 +1,1170 @@
+<title>Notatnik QA — Faza 0: Fundamenty środowiska</title>
+
+<style>
+  :root {
+    --ground:      #F1F4F4;
+    --surface:     #FFFFFF;
+    --surface-2:   #F7F9F9;
+    --ink:         #131A1C;
+    --ink-2:       #4B585C;
+    --ink-3:       #77868B;
+    --line:        #D9E0E1;
+    --line-strong: #B9C5C7;
+    --accent:      #0B6A6A;
+    --accent-ink:  #08504F;
+    --accent-soft: #E2EFEE;
+    --warn:        #A0491A;
+    --warn-soft:   #FAEDE4;
+    --ok:          #256B45;
+    --ok-soft:     #E4F0E9;
+
+    --font-display: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --font-body:    "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --font-mono:    "Cascadia Mono", Consolas, "SF Mono", "Liberation Mono", monospace;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #0E1315;
+      --surface:     #151D1F;
+      --surface-2:   #1A2325;
+      --ink:         #E5EDEE;
+      --ink-2:       #9AA9AD;
+      --ink-3:       #6F8085;
+      --line:        #29373A;
+      --line-strong: #3B4C50;
+      --accent:      #4FBCB1;
+      --accent-ink:  #7FD3CA;
+      --accent-soft: #10292A;
+      --warn:        #DE8B52;
+      --warn-soft:   #2A1C13;
+      --ok:          #5CBE85;
+      --ok-soft:     #132720;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1315;
+    --surface:     #151D1F;
+    --surface-2:   #1A2325;
+    --ink:         #E5EDEE;
+    --ink-2:       #9AA9AD;
+    --ink-3:       #6F8085;
+    --line:        #29373A;
+    --line-strong: #3B4C50;
+    --accent:      #4FBCB1;
+    --accent-ink:  #7FD3CA;
+    --accent-soft: #10292A;
+    --warn:        #DE8B52;
+    --warn-soft:   #2A1C13;
+    --ok:          #5CBE85;
+    --ok-soft:     #132720;
+  }
+
+  :root[data-theme="light"] {
+    --ground:      #F1F4F4;
+    --surface:     #FFFFFF;
+    --surface-2:   #F7F9F9;
+    --ink:         #131A1C;
+    --ink-2:       #4B585C;
+    --ink-3:       #77868B;
+    --line:        #D9E0E1;
+    --line-strong: #B9C5C7;
+    --accent:      #0B6A6A;
+    --accent-ink:  #08504F;
+    --accent-soft: #E2EFEE;
+    --warn:        #A0491A;
+    --warn-soft:   #FAEDE4;
+    --ok:          #256B45;
+    --ok-soft:     #E4F0E9;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  /* ---------- header ---------- */
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 40px;
+    border-bottom: 3px double var(--line-strong);
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 6vw, 50px);
+    line-height: 1.08;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    font-size: 19px;
+    color: var(--ink-2);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-3);
+    margin-top: 4px;
+  }
+
+  .meta-row b { color: var(--ink-2); font-weight: 600; }
+
+  /* ---------- table of contents ---------- */
+
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 26px 28px;
+  }
+
+  nav.toc h2 {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 9px 28px;
+  }
+
+  nav.toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    font-size: 15.5px;
+  }
+
+  nav.toc a:hover,
+  nav.toc a:focus-visible { border-bottom-color: var(--accent); color: var(--accent); }
+
+  nav.toc .tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    margin-right: 8px;
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    scroll-margin-top: 24px;
+  }
+
+  .topic {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h2.head {
+    font-family: var(--font-display);
+    font-size: clamp(25px, 3.6vw, 33px);
+    line-height: 1.18;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: -8px 0 0;
+  }
+
+  h3 {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: 0.005em;
+    margin: 10px 0 -6px;
+    color: var(--ink);
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+
+  a.ext { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  a.ext:hover, a.ext:focus-visible { border-bottom-color: var(--accent); }
+
+  strong { font-weight: 650; }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 0.1em 0.36em;
+    white-space: nowrap;
+  }
+
+  /* ---------- code / terminal blocks ---------- */
+
+  pre {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--line-strong);
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+
+  pre b { color: var(--ink); font-weight: 600; }
+  pre .c { color: var(--ink-3); }
+  pre .bad { color: var(--warn); font-weight: 600; }
+  pre .good { color: var(--ok); font-weight: 600; }
+
+  /* ---------- callouts ---------- */
+
+  .qa {
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .qa .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .qa .q {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .qa .a { font-size: 15.5px; color: var(--ink-2); margin: 0; }
+  .qa .a + .a { margin-top: -4px; }
+
+  .trap {
+    background: var(--warn-soft);
+    border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .trap .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--warn);
+    font-weight: 600;
+  }
+
+  .trap p { font-size: 15.5px; }
+
+  .ours {
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--ok);
+    background: var(--surface);
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ours .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ok);
+    font-weight: 600;
+  }
+
+  .ours p { font-size: 15.5px; color: var(--ink-2); }
+
+  /* ---------- tables ---------- */
+
+  .tw { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+
+  th, td {
+    text-align: left;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 600;
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .pill.eol { color: var(--warn); }
+  .pill.lts { color: var(--ok); }
+  .pill.cur { color: var(--ink-3); }
+
+  /* ---------- lists ---------- */
+
+  ul.plain { margin: 0; padding-left: 20px; max-width: var(--measure); }
+  ul.plain li { margin-bottom: 7px; }
+  ul.plain li::marker { color: var(--accent); }
+
+  /* ---------- footer ---------- */
+
+  .footer {
+    border-top: 3px double var(--line-strong);
+    padding-top: 28px;
+    font-size: 14.5px;
+    color: var(--ink-3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .pending {
+    border: 1px dashed var(--line-strong);
+    padding: 18px 22px;
+    color: var(--ink-3);
+    font-size: 15px;
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .wrap { padding: 36px 18px 64px; gap: 44px; }
+    nav.toc { padding: 20px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">QA Playground · Notatnik</p>
+    <h1>Faza 0 — Fundamenty środowiska</h1>
+    <p class="standfirst">
+      Co zainstalowaliśmy, dlaczego akurat tak, i co z tego realnie pada na rozmowach.
+      Każdy temat ma wyjaśnienie, dowód z naszej maszyny i pytanie rekrutacyjne z odpowiedzią.
+    </p>
+    <div class="meta-row">
+      <span><b>Data:</b> 1 września 2026</span>
+      <span><b>Maszyna:</b> ASUS VivoBook X505ZA · Windows 10 Home 22H2 · 11 GB RAM</span>
+      <span><b>Status:</b> w toku</span>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <h2>Spis treści</h2>
+    <ol>
+      <li><span class="tag">JAVA</span><a href="#lts">Cykl wydawniczy i LTS</a></li>
+      <li><span class="tag">JAVA</span><a href="#dist">Dystrybucje JDK</a></li>
+      <li><span class="tag">SYSTEM</span><a href="#env">Zmienne środowiskowe</a></li>
+      <li><span class="tag">SYSTEM</span><a href="#path">PATH i jego pułapki</a></li>
+      <li><span class="tag">SYSTEM</span><a href="#uac">UAC i filtrowany token</a></li>
+      <li><span class="tag">MAVEN</span><a href="#maven">Maven i JEP 472</a></li>
+      <li><span class="tag">SECURITY</span><a href="#sha">Sumy kontrolne</a></li>
+      <li><span class="tag">POWERSHELL</span><a href="#policy">ExecutionPolicy</a></li>
+      <li><span class="tag">NODE</span><a href="#node">Node.js i jego LTS</a></li>
+      <li><span class="tag">LINUX</span><a href="#wsl">WSL i WSL2</a></li>
+      <li><span class="tag">DOCKER</span><a href="#docker">Docker</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ LTS ============ -->
+  <section id="lts">
+    <p class="topic">Java · Cykl wydawniczy</p>
+    <h2 class="head">Dlaczego LTS, a nie „najnowsza"</h2>
+
+    <p>
+      Java wychodzi w nowej wersji głównej <strong>co pół roku</strong>. Ale tylko część wydań
+      dostaje status <strong>LTS</strong> (Long-Term Support). Zwykłe wydanie jest wspierane
+      przez jakieś sześć miesięcy — do czasu, aż wyjdzie następne. Potem koniec: żadnych łatek,
+      żadnych poprawek bezpieczeństwa.
+    </p>
+    <p>
+      LTS-y — <strong>8, 11, 17, 21, 25</strong> — dostają wsparcie przez lata. Dlatego firmy
+      stoją wyłącznie na nich, dlatego ogłoszenia mówią „Java 17" albo „Java 21", i dlatego nikt
+      nigdy nie napisze „szukamy programisty Java 20".
+    </p>
+
+    <h3>Pułapka licencyjna Oracle</h3>
+    <p>
+      Od Javy 17 Oracle udostępnia swoje JDK na licencji NFTC, która brzmi „za darmo" — ale
+      zawiera zapis: darmowe <strong>do roku po ukazaniu się następnego LTS</strong>. Ponieważ
+      Java 25 wyszła we wrześniu 2025, aktualizacje Oracle JDK 21 wydane po
+      <strong>wrześniu 2026</strong> przechodzą na płatną licencję OTN.
+    </p>
+
+    <div class="ours">
+      <span class="label">U nas na maszynie</span>
+      <p>
+        Zastaliśmy <strong>Oracle Java 20</strong> — wydanie nie-LTS, bez wsparcia od 2023 roku.
+        Zastąpiliśmy ją <strong>Temurin JDK 25 LTS</strong> (wsparcie do 2033). Javy 21 świadomie
+        nie wybraliśmy: za dwa miesiące weszlibyśmy prosto w opisaną wyżej ścianę licencyjną.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Czym różni się wydanie LTS od zwykłego i dlaczego to ma znaczenie dla projektu?</p>
+      <p class="a">
+        Zwykłe wydanie jest wspierane ~6 miesięcy, LTS przez lata. Projekt komercyjny żyje
+        dłużej niż pół roku, więc na nie-LTS byłbyś zmuszony do migracji dwa razy w roku albo
+        do stania na wersji bez łatek bezpieczeństwa.
+      </p>
+      <p class="a">
+        <strong>Wartość dodana w odpowiedzi:</strong> wspomnieć, że sam status LTS to nie wszystko —
+        liczy się jeszcze licencja konkretnej dystrybucji. Oracle JDK jest darmowy tylko do roku
+        po następnym LTS, więc „LTS" nie znaczy automatycznie „darmowy przez cały okres wsparcia".
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ DYSTRYBUCJE ============ -->
+  <section id="dist">
+    <p class="topic">Java · Dystrybucje</p>
+    <h2 class="head">Java to nie jest jeden produkt</h2>
+
+    <p>
+      <strong>OpenJDK</strong> to otwarty kod źródłowy Javy. Nikt nie rozdaje go jako gotowej
+      binarki — firmy biorą ten kod, kompilują i publikują własne <strong>dystrybucje</strong>:
+      Oracle JDK, Eclipse Temurin, Amazon Corretto, Azul Zulu, Microsoft Build of OpenJDK.
+    </p>
+    <p>
+      Kod jest praktycznie ten sam. Różnią się <strong>licencją, długością wsparcia i tym, kto
+      podpisuje binarkę</strong>. To trochę jak dystrybucje Linuksa: jedno jądro, różne opakowanie.
+    </p>
+
+    <h3>Dlaczego wybraliśmy Temurin</h3>
+    <ul class="plain">
+      <li><strong>Licencja bez haczyków.</strong> Fundacja Eclipse, darmowy zawsze i bezwarunkowo. Żadnego liczenia miesięcy.</li>
+      <li><strong>To domyślny wybór w CI.</strong> <code>actions/setup-java</code> w GitHub Actions ma Temurina jako standard, podobnie większość obrazów Dockera. Ta sama dystrybucja lokalnie i w pipelinie = mniej „u mnie działa".</li>
+      <li><strong>Certyfikat TCK.</strong> Formalnie przeszedł zestaw testów zgodności Oracle. To nie jest podróbka.</li>
+    </ul>
+
+    <div class="trap">
+      <span class="label">Kontekst historyczny</span>
+      <p>
+        W 2019 Oracle zmienił licencję tak, że komercyjne użycie ich JDK zaczęło wymagać płatnej
+        subskrypcji. Pół branży uciekło wtedy na AdoptOpenJDK (dziś Temurin) i Corretto.
+        Jeśli ktoś na rozmowie pyta „czemu nie Oracle JDK", to jest właśnie ta historia.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Jaka jest różnica między OpenJDK a Oracle JDK?</p>
+      <p class="a">
+        OpenJDK to projekt i kod źródłowy. Oracle JDK to jedna z wielu dystrybucji zbudowanych
+        z tego kodu — obok Temurina, Corretto czy Zulu. Od Javy 11 są funkcjonalnie
+        praktycznie identyczne; realna różnica leży w licencji i wsparciu, nie w kodzie.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ ENV ============ -->
+  <section id="env">
+    <p class="topic">System · Zmienne środowiskowe</p>
+    <h2 class="head">Dlaczego trzeba otwierać nowy terminal</h2>
+
+    <p>
+      Zmienne środowiskowe <strong>kopiują się z procesu rodzica do dziecka w momencie startu
+      dziecka</strong>. Nie istnieje mechanizm „odświeżenia" środowiska w już działającym procesie.
+      Zmiana w rejestrze dotyka tylko procesów uruchomionych <em>po</em> niej.
+    </p>
+    <p>
+      Dlatego po każdej instalacji trzeba zamknąć terminal i otworzyć nowy. I dlatego usługa
+      Jenkinsa nie widzi zmiennej, którą dodałeś godzinę temu, dopóki jej nie zrestartujesz.
+    </p>
+
+    <div class="ours">
+      <span class="label">Zaobserwowaliśmy to na żywo</span>
+      <p>
+        Po instalacji Temurina Twój nowy terminal pokazywał <strong>Javę 25</strong>, a sesja
+        Claude Code w tym samym czasie uparcie twierdziła, że jest <strong>Java 20</strong>.
+        Oba wyniki były prawdziwe: proces Claude Code wystartował przed instalacją i ma zamrożoną
+        kopię starego środowiska, którą przekazuje każdemu swojemu dziecku.
+      </p>
+    </div>
+
+    <h3>Trzy zakresy w Windows</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Zakres</th><th>Gdzie mieszka</th><th>Kogo dotyczy</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Machine</code></td><td>HKEY_LOCAL_MACHINE</td><td>wszystkich użytkowników · wymaga administratora</td></tr>
+          <tr><td><code>User</code></td><td>HKEY_CURRENT_USER</td><td>tylko Ciebie · bez elewacji</td></tr>
+          <tr><td><code>Process</code></td><td>pamięć procesu</td><td>tylko bieżący proces · ginie przy zamknięciu</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Efektywna wartość dla procesu to <strong>złożenie Machine i User</strong>, a zmiany w zakresie
+      <code>Process</code> nadpisują wszystko, ale tylko tu i teraz.
+    </p>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Ustawiłeś zmienną środowiskową, a aplikacja jej nie widzi. Jak to diagnozujesz?</p>
+      <p class="a">
+        Najpierw sprawdzam, czy proces został uruchomiony <em>po</em> zmianie — jeśli nie,
+        ma zamrożone stare środowisko i wystarczy restart. Potem sprawdzam zakres: zmienna
+        ustawiona dla użytkownika A nie istnieje dla usługi działającej jako <code>SYSTEM</code>.
+        To najczęstsza przyczyna na serwerach CI.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PATH ============ -->
+  <section id="path">
+    <p class="topic">System · PATH</p>
+    <h2 class="head">PATH: kolejność decyduje o wszystkim</h2>
+
+    <p>
+      <code>PATH</code> to lista katalogów, w których system szuka programu, gdy wpiszesz jego
+      nazwę. Szuka <strong>po kolei i bierze pierwszy trafiony</strong>. Nie „najnowszy",
+      nie „najlepszy" — pierwszy. Cała reszta jest ignorowana w milczeniu.
+    </p>
+
+    <div class="ours">
+      <span class="label">Nasz przypadek</span>
+      <p>
+        Zastaliśmy trzy wpisy Javy naraz. Oracle instaluje własny skrót zwany
+        <em>javapath</em>, który wpycha się na początek listy:
+      </p>
+      <pre><span class="c">stan zastany:</span>
+1. C:\Program Files\Common Files\Oracle\Java\javapath   <span class="bad">← shim Oracle, wygrywał</span>
+2. C:\Program Files\Java\jdk-20\bin
+
+<span class="c">po instalacji Temurina:</span>
+1. C:\Program Files\Eclipse Adoptium\jdk-25...\bin      <span class="good">← Temurin wskoczył przed shim</span>
+2. C:\Program Files\Common Files\Oracle\Java\javapath   <span class="bad">← mina</span>
+3. C:\Program Files\Java\jdk-20\bin                     <span class="bad">← mina</span>
+
+<span class="c">po sprzątaniu:</span>
+1. C:\Program Files\Eclipse Adoptium\jdk-25...\bin      <span class="good">← jedyna Java</span></pre>
+      <p>
+        Stan pośredni <em>działał</em>, ale przypadkiem. Wystarczyłby jeden instalator
+        przestawiający kolejność i cicho wróciłbyś na Javę 20.
+      </p>
+    </div>
+
+    <h3>Martwe wpisy</h3>
+    <p>
+      Deinstalator Oracle usunął katalog <code>jdk-20</code>, ale <strong>zostawił po sobie wpis
+      w PATH</strong> wskazujący w pustkę. Nie boli, ale każdy martwy wpis to dodatkowy katalog
+      do przeszukania przy każdym uruchomieniu procesu — i szum przy diagnozie.
+    </p>
+
+    <div class="trap">
+      <span class="label">Pułapka · setx obcina PATH</span>
+      <p>
+        W internecie krąży rada „użyj <code>setx PATH ...</code>". <strong>Nigdy tego nie rób.</strong>
+        <code>setx</code> ma twardy limit <strong>1024 znaków</strong> i przy dłuższej wartości
+        obcina ją <em>bez ostrzeżenia</em>. Ludzie w ten sposób kasowali sobie
+        <code>C:\Windows\System32</code> z PATH i orali system.
+      </p>
+      <p>
+        Poprawna metoda to <code>[Environment]::SetEnvironmentVariable(..., "Machine")</code> —
+        bez limitu, zapis prosto do rejestru. Nasz PATH miał <strong>808 znaków</strong>: jedna
+        instalacja od granicy.
+      </p>
+    </div>
+
+    <h3>Dwie zasady, które warto mieć w odruchu</h3>
+    <ul class="plain">
+      <li><strong>Zawsze backup przed edycją PATH.</strong> Jeden plik tekstowy, dwie sekundy roboty.</li>
+      <li><strong>Po edycji sprawdź, czy <code>System32</code> nadal jest na liście.</strong> To ten wpis, którego utrata psuje wszystko.</li>
+    </ul>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Wpisujesz <code>java -version</code> i dostajesz inną wersję, niż się spodziewasz. Co robisz?</p>
+      <p class="a">
+        Sprawdzam, <em>który</em> plik wykonywalny się uruchamia — na Windows
+        <code>Get-Command java -All</code>, na Linuksie <code>which -a java</code>. To pokazuje
+        wszystkie trafienia w kolejności PATH. Zwykle winowajcą jest shim albo stary wpis
+        stojący wyżej niż ten właściwy. Osobno sprawdzam <code>JAVA_HOME</code>, bo narzędzia
+        typu Maven kierują się nim, a nie PATH — i te dwie rzeczy potrafią wskazywać co innego.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ UAC ============ -->
+  <section id="uac">
+    <p class="topic">System · Uprawnienia</p>
+    <h2 class="head">UAC: jesteś adminem i jednocześnie nim nie jesteś</h2>
+
+    <p>
+      Gdy logujesz się na konto z uprawnieniami administratora, Windows wystawia Ci
+      <strong>dwa tokeny</strong>: pełny administracyjny i przefiltrowany, standardowy.
+      Każdy proces uruchamiany normalnie — Explorer, terminal, IDE — dostaje ten
+      <strong>przefiltrowany</strong>, z wyciętym członkostwem w grupie Administratorzy.
+    </p>
+    <p>
+      „Uruchom jako administrator" <strong>nie zmienia konta</strong>. Wydaje procesowi ten drugi,
+      pełny token. Stąd pozornie sprzeczny wynik, na który trafiliśmy:
+    </p>
+
+    <pre><span class="c">czy proces ma uprawnienia admina?</span>
+<span class="bad">NIE</span> — token przefiltrowany
+
+<span class="c">czy konto należy do grupy Administratorzy?</span>
+LAPTOP-PSDNB58U\Administrator
+LAPTOP-PSDNB58U\qapio          <span class="good">← TAK, jesteś tu</span></pre>
+
+    <p>Oba zdania prawdziwe naraz. Konto ma uprawnienia; proces ich nie dostał.</p>
+
+    <div class="ours">
+      <span class="label">Czego nas to nauczyło</span>
+      <p>
+        Pierwsza próba naszego skryptu <strong>zrobiła połowę roboty i nie krzyknęła</strong>:
+        backup się zapisał (pulpit nie wymaga uprawnień), a zapis do rejestru poległ po cichu.
+        Dopisaliśmy bezpiecznik sprawdzający uprawnienia <em>na wejściu</em>. Zasada uniwersalna,
+        a w CI krytyczna: <strong>fail fast, głośno, zanim cokolwiek zmienisz</strong> — nie
+        w połowie i nie po cichu.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Skrypt działa, gdy uruchamiasz go ręcznie, ale zawodzi na agencie CI. Od czego zaczynasz?</p>
+      <p class="a">
+        Od porównania kontekstu wykonania: na jakim koncie działa agent, jakie ma uprawnienia
+        i jakie widzi zmienne środowiskowe. Usługa działająca jako <code>SYSTEM</code> albo
+        dedykowany użytkownik ma inne środowisko i inny token niż Twoja interaktywna sesja.
+        To najczęstsza przyczyna klasy „u mnie działa".
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ MAVEN ============ -->
+  <section id="maven">
+    <p class="topic">Maven · Konfiguracja</p>
+    <h2 class="head">MAVEN_HOME i ostrzeżenie, którego nie wolno zignorować</h2>
+
+    <h3>Zmienne <code>*_HOME</code> wskazują katalog domowy, nie <code>bin</code></h3>
+    <p>
+      Konwencja jest jednolita dla <code>JAVA_HOME</code>, <code>MAVEN_HOME</code>,
+      <code>ANDROID_HOME</code>: wskazujesz <strong>katalog główny</strong>, a narzędzia doklejają
+      sobie <code>\bin</code> same.
+    </p>
+
+    <pre><span class="c">stan zastany:</span>
+MAVEN_HOME = C:\apache-maven-3.9.1\bin    <span class="bad">← rozwija się do \bin\bin</span>
+
+<span class="c">poprawnie:</span>
+MAVEN_HOME = C:\apache-maven-3.9.16       <span class="good">← katalog domowy</span></pre>
+
+    <p>
+      Błąd nie objawiał się, bo sam Maven tej zmiennej nie potrzebuje — znajduje się przez PATH.
+      Ale gdy sięgnie po nią plugin Jenkinsa albo IDE, dostaniesz „nie znaleziono Mavena"
+      i będziesz szukał godzinę.
+    </p>
+
+    <h3>Ostrzeżenie o jansi — czyli JEP 472</h3>
+    <p>
+      Maven 3.9.1 wiózł ze sobą starą bibliotekę <strong>jansi 2.4.0</strong> (koloruje output
+      w konsoli), która ładuje kod natywny przez <code>System::load</code>. Nowsze JDK, w ramach
+      <a class="ext" href="https://openjdk.org/jeps/472">JEP 472</a>, traktują dostęp do kodu
+      natywnego jako operację ograniczoną:
+    </p>
+
+    <pre>WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi...
+<span class="bad">WARNING: Restricted methods will be blocked in a future release</span></pre>
+
+    <p>
+      Zwróć uwagę na ostatnią linię: <strong>„will be blocked"</strong>. To nie kosmetyka —
+      to licznik odliczający do wersji JDK, w której build przestanie startować.
+      Aktualizacja Mavena do 3.9.16 wyciszyła ostrzeżenie, bo nowszy Maven wiezie naprawioną jansi.
+    </p>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Build wypisuje ostrzeżenia, ale kończy się sukcesem. Zajmujesz się tym?</p>
+      <p class="a">
+        Tak, i czytam treść zamiast filtrować. Ostrzeżenia z JDK zwykle zapowiadają zmianę,
+        która w kolejnej wersji stanie się twardym błędem — jak JEP 472, gdzie „warning" dziś
+        znaczy „blocked" jutro. Naprawa kosztuje minutę teraz i dzień w środku migracji.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ SHA ============ -->
+  <section id="sha">
+    <p class="topic">Bezpieczeństwo · Łańcuch dostaw</p>
+    <h2 class="head">Suma kontrolna z innego serwera niż plik</h2>
+
+    <p>
+      Przy pobieraniu Mavena użyliśmy dwóch <strong>różnych hostów</strong> i to jest sedno,
+      a nie szczegół:
+    </p>
+
+    <pre>plik ZIP    → https://dlcdn.apache.org/...       <span class="c">CDN / lustro</span>
+suma SHA512 → https://downloads.apache.org/...  <span class="c">główny serwer Apache</span></pre>
+
+    <p>
+      Apache rozdaje binarki przez sieć luster, bo są duże i ruch jest spory. Lustro to
+      <strong>cudza infrastruktura</strong> — Apache jej nie kontroluje. Gdyby ktoś podmienił
+      ZIP na lustrze, dostałbyś zatrutego Mavena, który wygląda normalnie i buduje Twój projekt.
+    </p>
+    <p>
+      Dlatego sumę kontrolną pobiera się <strong>z serwera głównego, nigdy z tego samego miejsca
+      co plik</strong>. Atakujący musiałby złamać oba naraz.
+    </p>
+
+    <div class="trap">
+      <span class="label">Kolejność ma znaczenie</span>
+      <p>
+        Weryfikuj <strong>przed</strong> rozpakowaniem, nie po instalacji. Sprawdzanie sumy po
+        zainstalowaniu pliku jest teatrem — kod już jest na dysku.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Co to jest atak na łańcuch dostaw i jak się przed nim bronić?</p>
+      <p class="a">
+        To atak nie na Twój kod, tylko na coś, czemu Twój kod ufa: zależność, narzędzie
+        budujące, obraz bazowy, plugin CI. Obrona to weryfikacja sum kontrolnych i podpisów
+        z niezależnego źródła, pinowanie wersji zamiast zakresów, lockfile w repozytorium
+        i automatyczne skanowanie zależności.
+      </p>
+      <p class="a">
+        <strong>Kontekst dla QA:</strong> testy uruchamiane w CI mają zwykle dostęp do sekretów
+        i środowisk. Zatruta zależność w projekcie testowym bywa łatwiejszym celem niż produkcja.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ POLICY ============ -->
+  <section id="policy">
+    <p class="topic">PowerShell · ExecutionPolicy</p>
+    <h2 class="head">ExecutionPolicy nie jest zabezpieczeniem</h2>
+
+    <p>
+      Domyślnie Windows kliencki ma politykę <code>Restricted</code> — <strong>żaden</strong>
+      skrypt <code>.ps1</code> nie może się uruchomić. Node instaluje dwa opakowania na npm:
+      <code>npm.cmd</code> i <code>npm.ps1</code>. W PowerShellu wygrywa wersja <code>.ps1</code>
+      i odbija się od polityki — stąd nasz błąd, mimo że npm był w pełni sprawny.
+    </p>
+
+    <pre>        Scope ExecutionPolicy
+      Process          Bypass      <span class="c">← sesja Claude Code</span>
+  CurrentUser       Undefined     <span class="bad">← Twoja → efektywnie Restricted</span>
+ LocalMachine       Undefined</pre>
+
+    <p>
+      <strong>Precedencja idzie z góry na dół.</strong> Dlatego moje skrypty chodziły, a Twoje nie —
+      ta sama mechanika, o którą rozbijają się ludzie na Jenkinsie, gdzie agent ma inną politykę
+      niż terminal.
+    </p>
+
+    <div class="trap">
+      <span class="label">Częste nieporozumienie</span>
+      <p>
+        To <strong>nie jest</strong> mechanizm bezpieczeństwa i Microsoft mówi to wprost.
+        Omija się go trywialnie: <code>powershell -ExecutionPolicy Bypass -File zly.ps1</code>
+        albo przepuszczeniem treści przez potok. To bariera przed <em>przypadkowym</em>
+        uruchomieniem skryptu, np. dwuklikiem w załącznik z maila. Nie licz na nią jako na ochronę.
+      </p>
+    </div>
+
+    <h3>Wartości, które warto znać</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Wartość</th><th>Znaczenie</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Restricted</code></td><td>żadnych skryptów · domyślne na Windows klienckim</td></tr>
+          <tr><td><code>RemoteSigned</code></td><td>lokalne działają, pobrane wymagają podpisu · <strong>nasz wybór</strong></td></tr>
+          <tr><td><code>AllSigned</code></td><td>każdy skrypt musi być podpisany, również Twój własny</td></tr>
+          <tr><td><code>Bypass</code></td><td>bez ograniczeń · typowe dla agentów CI</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Windows rozpoznaje pobrane pliki po znaczniku <em>Mark of the Web</em>, który przeglądarka
+      dokleja do pliku. Wybraliśmy <code>RemoteSigned</code> w zakresie <code>CurrentUser</code> —
+      zasada najmniejszych uprawnień: nie ruszaj całej maszyny, gdy wystarczy ruszyć siebie.
+    </p>
+  </section>
+
+  <!-- ============ NODE ============ -->
+  <section id="node">
+    <p class="topic">Node.js · Cykl wydawniczy</p>
+    <h2 class="head">Node ma własny rytm LTS — i właśnie go zmienia</h2>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th>Wersja</th><th>Status</th><th>Wsparcie do</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">26</td><td><span class="pill cur">Current</span></td><td>LTS dopiero od października 2026</td></tr>
+          <tr><td class="num">24</td><td><span class="pill lts">Active LTS</span></td><td>kwiecień 2028 · <strong>nasz wybór</strong></td></tr>
+          <tr><td class="num">22</td><td><span class="pill cur">Maintenance</span></td><td>kwiecień 2027</td></tr>
+          <tr><td class="num">18</td><td><span class="pill eol">EOL</span></td><td>koniec · <strong>stan zastany</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      Ta sama logika, co przy Javie: do projektu, który ma stać latami, bierzesz linię z długim
+      wsparciem, a nie najświeższą. Node 26 jest „Current", czyli linią rozwojową — LTS-em
+      stanie się dopiero jesienią.
+    </p>
+
+    <div class="trap">
+      <span class="label">Wiedza, która się właśnie dezaktualizuje</span>
+      <p>
+        Klasyczna zasada brzmi „parzyste wersje Node to LTS, nieparzyste nie". Od wersji
+        <strong>27 (październik 2026)</strong> Node przechodzi na <strong>jedno wydanie główne
+        rocznie i każde będzie LTS-em</strong> — podział znika. Jeśli ktoś przytoczy tę regułę
+        na rozmowie, od jesieni będzie już nieaktualna. Dobre miejsce, żeby pokazać, że śledzisz temat.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ WSL ============ -->
+  <section id="wsl">
+    <p class="topic">Linux · WSL</p>
+    <h2 class="head">WSL: Linux w środku Windowsa</h2>
+
+    <p>
+      <strong>WSL</strong> (Windows Subsystem for Linux) pozwala uruchomić pełne Ubuntu wewnątrz
+      Windowsa — bez dual boota, bez VirtualBoxa, bez osobnego okna maszyny wirtualnej.
+      Otwierasz terminal i jesteś w Linuksie, mając jednocześnie dostęp do plików Windowsa.
+    </p>
+
+    <h3>WSL1 kontra WSL2 — to dwie zupełnie różne rzeczy</h3>
+    <p>
+      Nazwa sugeruje wersję tego samego, ale to <strong>fundamentalnie inna architektura</strong>.
+      To jedno z tych rozróżnień, które bardzo dobrze wypada na rozmowie.
+    </p>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th></th><th>WSL1</th><th>WSL2</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Jak działa</strong></td>
+            <td>warstwa tłumacząca wywołania systemowe Linuksa na wywołania Windowsa</td>
+            <td><strong>prawdziwe jądro Linuksa</strong> w lekkiej maszynie wirtualnej</td>
+          </tr>
+          <tr>
+            <td><strong>Jądro Linuksa</strong></td>
+            <td>brak — jest emulowane</td>
+            <td>jest, dostarczane i aktualizowane przez Microsoft</td>
+          </tr>
+          <tr>
+            <td><strong>Zgodność</strong></td>
+            <td>częściowa — część wywołań nie istnieje</td>
+            <td>pełna</td>
+          </tr>
+          <tr>
+            <td><strong>Docker</strong></td>
+            <td><span class="pill eol">nie działa</span></td>
+            <td><span class="pill lts">działa</span></td>
+          </tr>
+          <tr>
+            <td><strong>Szybsze przy</strong></td>
+            <td>plikach na dyskach Windows (<code>/mnt/c</code>)</td>
+            <td>plikach we własnym systemie ext4</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Dlaczego Docker wymaga akurat WSL2</h3>
+    <p>
+      Kontenery to nie maszyny wirtualne. Kontener to <strong>proces Linuksa odizolowany
+      mechanizmami samego jądra</strong> — <code>namespaces</code> (izolacja: własne PID-y, sieć,
+      punkty montowania) i <code>cgroups</code> (limity: ile CPU, ile pamięci).
+    </p>
+    <p>
+      To są funkcje <strong>jądra Linuksa</strong>. WSL1 jądra nie ma, tylko tłumacza wywołań —
+      więc nie ma czego użyć. WSL2 ma prawdziwe jądro, więc kontenery działają natywnie.
+      To cała odpowiedź na pytanie „czemu Docker potrzebuje WSL2".
+    </p>
+
+    <div class="trap">
+      <span class="label">Konsekwencja przy pracy z plikami</span>
+      <p>
+        Skoro WSL2 to osobna maszyna wirtualna z własnym dyskiem, to dostęp do plików
+        Windowsa (<code>/mnt/c/...</code>) idzie <strong>przez sieć</strong> i jest wolny.
+        Projekt trzymany w <code>/mnt/c</code> i budowany z WSL2 potrafi być kilkukrotnie wolniejszy
+        niż ten sam projekt w natywnym systemie plików WSL-a. Klasyczne źródło „czemu to tak muli".
+      </p>
+    </div>
+
+    <h3>Dlaczego to działa na Windows 10 Home</h3>
+    <p>
+      Pełny <strong>Hyper-V</strong> rzeczywiście jest tylko w edycjach Pro i Enterprise.
+      Ale WSL2 nie używa pełnego Hyper-V — korzysta z funkcji <strong>Virtual Machine
+      Platform</strong>, czyli okrojonego hipernadzorcy dostępnego <em>również</em> w Home.
+      Właśnie po to Microsoft ją wydzielił.
+    </p>
+    <p>
+      To też wyjaśnia, dlaczego Docker Desktop z backendem WSL2 działa na Home, mimo że stary
+      backend oparty na Hyper-V nigdy nie działał.
+    </p>
+
+    <div class="ours">
+      <span class="label">U nas</span>
+      <p>
+        WSL-a nie było w ogóle — <code>wsl --list</code> zwracał samą pomoc, czyli zero
+        dystrybucji. Wirtualizacja w BIOS-ie jest już włączona (<code>HypervisorPresent: True</code>),
+        więc odpadła najgorsza część: grzebanie w BIOS-ie. Komenda <code>wsl --install</code>
+        robi cztery rzeczy naraz: włącza funkcję Subsystem for Linux, włącza Virtual Machine
+        Platform, pobiera jądro Linuksa i instaluje Ubuntu. Wynik końcowy:
+      </p>
+      <pre>Ubuntu 26.04 LTS
+6.18.33.2-<b>microsoft-standard-WSL2</b>   <span class="good">← dowód: prawdziwe jądro Linuksa</span>
+uid=1000(qapiolac) ... <b>27(sudo)</b> ...  <span class="good">← użytkownik w grupie sudo</span></pre>
+    </div>
+
+    <div class="trap">
+      <span class="label">Dwie pułapki, na które trafiliśmy</span>
+      <p>
+        <strong>Restart musi być restartem.</strong> Windows 10 ma domyślnie włączone
+        <em>szybkie uruchamianie</em> — „Zamknij system" nie robi pełnego wyłączenia, tylko
+        hibernuje jądro. Składniki systemu nie inicjalizują się od nowa i wracasz do tego samego
+        stanu. Tylko <strong>„Uruchom ponownie"</strong> wymusza pełny cykl. Stąd klasyczne
+        „przecież wyłączałem komputer, a dalej nie działa".
+      </p>
+      <p>
+        <strong>„Oczekiwanie na ukończenie OOBE" to nie zawieszenie.</strong> OOBE
+        (<em>Out Of Box Experience</em>) to pierwsza konfiguracja Ubuntu. Komunikat znaczy
+        dosłownie to, co pisze: WSL czeka, aż skończysz w <em>osobnym oknie</em>. Diagnoza:
+        proces zużył 0,1 s CPU przez 34 minuty — zawieszony proces zwykle miele procesor albo
+        puchnie, a ten po prostu czekał na klawiaturę.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Czym różni się kontener od maszyny wirtualnej?</p>
+      <p class="a">
+        Maszyna wirtualna emuluje cały sprzęt i uruchamia własne, pełne jądro systemu —
+        stąd waga liczona w gigabajtach i start w minutach. Kontener to zwykły proces na
+        <strong>współdzielonym jądrze hosta</strong>, odizolowany przez <code>namespaces</code>
+        i ograniczony przez <code>cgroups</code> — stąd megabajty i start w sekundach.
+      </p>
+      <p class="a">
+        Konsekwencja: kontener nie niesie własnego jądra, więc kontenery Linuksa potrzebują
+        jądra Linuksa. Na Windowsie dostarcza je właśnie WSL2 — i dlatego Docker Desktop
+        go wymaga.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ DOCKER ============ -->
+  <section id="docker">
+    <p class="topic">Docker · Konteneryzacja</p>
+    <h2 class="head">Docker — i dlaczego to narzędzie testera, nie tylko dewelopera</h2>
+
+    <h3>Problem, który rozwiązuje</h3>
+    <p>
+      Projekt potrzebuje bazy PostgreSQL, backendu Javy, frontendu Node, serwera pocztowego
+      i trzech przeglądarek do Grida. Bez Dockera instalujesz każdą z tych rzeczy
+      <strong>ręcznie na swoim laptopie</strong> — porty, użytkownicy bazy, zmienne. Potem
+      okazuje się, że na Jenkinsie stoi inna wersja PostgreSQL i testy padają.
+      Klasyczne <strong>„u mnie działa"</strong>.
+    </p>
+    <p>
+      Docker zamyka każdy element w <strong>kontenerze</strong> — samowystarczalnej paczce
+      z aplikacją i jej zależnościami. Jedna komenda podnosi, jedna kasuje, na laptopie nie
+      zostaje ślad.
+    </p>
+
+    <h3>Obraz kontra kontener</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr><th></th><th>Obraz (image)</th><th>Kontener (container)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Czym jest</strong></td>
+            <td>niezmienny szablon, przepis</td>
+            <td>działająca instancja obrazu</td>
+          </tr>
+          <tr>
+            <td><strong>Przykład</strong></td>
+            <td><code>postgres:16</code> — leży na dysku, nic nie robi</td>
+            <td>proces z własnymi danymi i portem</td>
+          </tr>
+          <tr>
+            <td><strong>Ile z jednego</strong></td>
+            <td>—</td>
+            <td>dowolnie wiele naraz, każdy osobno</td>
+          </tr>
+          <tr>
+            <td><strong>Analogia OOP</strong></td>
+            <td>klasa</td>
+            <td>obiekt</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Dlaczego kontener jest lekki</h3>
+    <p>
+      Kontener to <strong>proces Linuksa</strong> odizolowany przez <code>namespaces</code>
+      (własne PID-y, sieć, system plików) i ograniczony przez <code>cgroups</code>
+      (limity CPU i pamięci) — mechanizmy <em>jądra hosta</em>. Nie niesie własnego jądra
+      ani systemu, więc waży megabajty i wstaje w sekundę. Maszyna wirtualna niesie jedno
+      i drugie, więc waży gigabajty i wstaje w minutę. Szczegóły w sekcji
+      <a class="ext" href="#wsl">WSL i WSL2</a>.
+    </p>
+
+    <h3>Po co to testerowi — konkretnie</h3>
+    <ul class="plain">
+      <li><strong>Selenium Grid bez instalowania przeglądarek.</strong> Chrome, Firefox i Edge w kontenerach, każdy z <em>przypiętą wersją</em> — koniec z automatycznymi aktualizacjami przeglądarki psującymi testy w nocy.</li>
+      <li><strong>Czysta baza na każdy przebieg.</strong> Największa zmora testów E2E to dane po poprzednim uruchomieniu. Kontener podnosisz przed, kasujesz po. Stan zerowy, zawsze.</li>
+      <li><strong>Testcontainers.</strong> Biblioteka, w której <em>kod testu sam podnosi</em> kontener z bazą, dostaje losowy port, a po teście kontener znika. Bez Dockera nie istnieje, a jest dziś standardem testów integracyjnych w Javie.</li>
+      <li><strong>Ten sam obraz lokalnie i w CI.</strong> Jenkins uruchamia dokładnie ten obraz, który testujesz u siebie. Nie ma dwóch środowisk, więc nie ma się czemu rozjechać.</li>
+      <li><strong>Całe portfolio jedną komendą.</strong> <code>docker compose up</code> podnosi backend, frontend, bazę i pocztę naraz. To ta komenda, którą wpisze rekruter — albo mu zadziała w minutę, albo zamknie kartę.</li>
+    </ul>
+
+    <div class="trap">
+      <span class="label">Uczciwie: czy da się bez tego</span>
+      <p>
+        Da się — zainstalowane lokalnie wszystko będzie działać. <em>Na Twoim laptopie.</em>
+        Ale Docker jest w ogłoszeniach na Senior QA praktycznie zawsze, a cały nowoczesny CI
+        stoi na kontenerach. Pomijając go, wycinasz połowę wartości projektu z portfolio.
+      </p>
+    </div>
+
+    <div class="ours">
+      <span class="label">U nas · pamięć</span>
+      <p>
+        WSL2 domyślnie rezerwuje <strong>połowę RAM-u</strong> — na naszych 11 GB zabrał
+        <strong>5,3 GB</strong>, dokładnie zgodnie z przewidywaniem. Z IntelliJ i przeglądarkami
+        zrobi się ciasno, więc limity przez plik <code>.wslconfig</code> będą potrzebne.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Jaka jest różnica między obrazem a kontenerem?</p>
+      <p class="a">
+        Obraz to niezmienny szablon leżący na dysku. Kontener to jego działająca instancja —
+        z jednego obrazu można uruchomić wiele niezależnych kontenerów. Jak klasa i obiekt.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Do czego wykorzystujesz Dockera w automatyzacji testów?</p>
+      <p class="a">
+        Do trzech rzeczy przede wszystkim: izolacji danych testowych (czysta baza na każdy
+        przebieg zamiast sprzątania po poprzednim), uruchamiania Selenium Grida z przypiętymi
+        wersjami przeglądarek, oraz zapewnienia, że lokalnie i w CI działa dokładnie to samo
+        środowisko.
+      </p>
+      <p class="a">
+        <strong>Wartość dodana:</strong> wspomnieć Testcontainers — że zależności podnosi sam
+        test, a nie ręcznie przygotowane środowisko. To pokazuje, że myślisz o powtarzalności,
+        a nie tylko o „odpaleniu testów".
+      </p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span class="label">Notatnik żywy</span>
+    <p>
+      Dokument rośnie razem z projektem — kolejne fazy dopisujemy tutaj.
+      Plan całości: <code>ROADMAP.md</code> w katalogu projektu.
+    </p>
+  </footer>
+
+</div>

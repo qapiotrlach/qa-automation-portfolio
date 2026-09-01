@@ -1,0 +1,31 @@
+# Domyslnie: Git normalizuje konce linii do LF w repozytorium.
+# Dzieki temu repo wyglada tak samo u Ciebie, na Jenkinsie i w kontenerze.
+* text=auto eol=lf
+
+# Pliki, ktore MUSZA miec LF - inaczej Linux/Docker ich nie uruchomi
+*.sh        text eol=lf
+*.bash      text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+mvnw        text eol=lf
+gradlew     text eol=lf
+
+# Pliki, ktore MUSZA miec CRLF - to skrypty Windows
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Binaria - Git nie dotyka ich zawartosci
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.jar       binary
+*.woff      binary
+*.woff2     binary
+*.webm      binary
+*.mp4       binary
