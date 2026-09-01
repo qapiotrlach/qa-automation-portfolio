@@ -448,6 +448,9 @@
       <li><span class="tag">NODE</span><a href="#node">Node.js i jego LTS</a></li>
       <li><span class="tag">LINUX</span><a href="#wsl">WSL i WSL2</a></li>
       <li><span class="tag">DOCKER</span><a href="#docker">Docker</a></li>
+      <li><span class="tag">GIT</span><a href="#git">Git — konfiguracja</a></li>
+      <li><span class="tag">GIT</span><a href="#podpisy">Podpisywanie commitów</a></li>
+      <li><span class="tag">GIT</span><a href="#sekrety">Sekrety w repozytorium</a></li>
     </ol>
   </nav>
 
@@ -1155,6 +1158,206 @@ uid=1000(qapiolac) ... <b>27(sudo)</b> ...  <span class="good">← użytkownik w
         <strong>Wartość dodana:</strong> wspomnieć Testcontainers — że zależności podnosi sam
         test, a nie ręcznie przygotowane środowisko. To pokazuje, że myślisz o powtarzalności,
         a nie tylko o „odpaleniu testów".
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ GIT ============ -->
+  <section id="git">
+    <p class="topic">Git · Konfiguracja</p>
+    <h2 class="head">Ustawienia, które ratują przed konkretnymi błędami</h2>
+
+    <h3>Końce linii — mina, która wybucha w Dockerze</h3>
+    <p>
+      Windows kończy linie znakami <code>CRLF</code>, Linux i macOS samym <code>LF</code>.
+      Git potrafi konwertować to automatycznie i domyślne ustawienie na Windowsie
+      (<code>core.autocrlf=true</code>) robi to <strong>za Twoimi plecami</strong>.
+    </p>
+    <p>Problem ujawnia się dopiero w kontenerze:</p>
+    <pre><span class="bad">/bin/bash^M: bad interpreter: No such file or directory</span></pre>
+    <p>
+      Ten <code>^M</code> to niewidzialny znak <code>CR</code>. Plik wygląda w edytorze
+      <strong>absolutnie normalnie</strong> — stąd godziny straconego czasu.
+    </p>
+    <p>
+      Rozwiązanie: <code>core.autocrlf=false</code> (Git niczego nie tłumaczy) plus plik
+      <code>.gitattributes</code> <strong>w repozytorium</strong>, który dekretuje końce linii
+      per typ pliku. Konfiguracja w repo bije konfigurację na maszynie — działa jednakowo
+      u Ciebie, na Jenkinsie i u każdego, kto sklonuje projekt.
+    </p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Ustawienie</th><th>Wartość</th><th>Przed czym chroni</th></tr></thead>
+        <tbody>
+          <tr><td><code>core.autocrlf</code></td><td><code>false</code></td><td>psucie skryptów <code>.sh</code> w kontenerach</td></tr>
+          <tr><td><code>core.longpaths</code></td><td><code>true</code></td><td>„Filename too long" przy <code>node_modules</code> (limit 260 znaków w Windows)</td></tr>
+          <tr><td><code>pull.rebase</code></td><td><code>true</code></td><td>śmieciowe commity „Merge branch 'main' of…"</td></tr>
+          <tr><td><code>push.autoSetupRemote</code></td><td><code>true</code></td><td>ciągłe <code>--set-upstream</code> przy nowej gałęzi</td></tr>
+          <tr><td><code>fetch.prune</code></td><td><code>true</code></td><td>lokalne widma gałęzi usuniętych na zdalnym</td></tr>
+          <tr><td><code>init.defaultBranch</code></td><td><code>main</code></td><td>przestarzała nazwa <code>master</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Adres e-mail w commitach</h3>
+    <p>
+      <strong>Każdy commit zawiera adres e-mail autora</strong>, a historia Git jest publiczna —
+      wystarczy <code>git log</code>, żeby wyciągnąć wszystkie adresy z repozytorium. Spamerzy
+      scrapują GitHuba właśnie po to.
+    </p>
+    <p>
+      Dlatego używamy adresu zastępczego <code>ID+nazwa@users.noreply.github.com</code>. GitHub
+      normalnie przypisze commity do konta i zaliczy je do wykresu aktywności, ale prawdziwy
+      adres pozostaje ukryty. W ustawieniach konta warto włączyć też
+      <em>Block command line pushes that expose my email</em> — bezpiecznik na wypadek pracy
+      z innej maszyny.
+    </p>
+
+    <div class="trap">
+      <span class="label">Pułapka · tylda i powłoki</span>
+      <p>
+        <code>~/.ssh/id_ed25519.pub</code> zadziała w bashu, ale <strong>nie w PowerShellu</strong>.
+        Tylda to funkcja <em>powłoki</em>: bash rozwija ją do katalogu domowego zanim przekaże
+        argument programowi, PowerShell przekazuje programom zewnętrznym dosłowny tekst
+        <code>~/...</code>. Efekt: „System nie może odnaleźć określonej ścieżki".
+        W PowerShellu używaj <code>$env:USERPROFILE</code> lub pełnych ścieżek.
+      </p>
+    </div>
+
+    <h3>Conventional Commits</h3>
+    <p>
+      Format <code>typ: opis</code> ze stałym zestawem typów: <code>feat</code>, <code>fix</code>,
+      <code>test</code>, <code>refactor</code>, <code>docs</code>, <code>chore</code>,
+      <code>ci</code>. Pierwsza linia w trybie rozkazującym, do 72 znaków, bez kropki; szczegóły
+      po pustej linii.
+    </p>
+    <p>
+      To nie ozdobnik — na tej konwencji stoi automatyczne generowanie changelogów
+      i wersjonowanie semantyczne: narzędzia czytają typy commitów i same decydują o podbiciu
+      wersji. Rekruter przeglądający historię widzi od razu, czy pracujesz jak w projekcie
+      komercyjnym, czy piszesz „poprawki", „zmiany", „update2".
+    </p>
+  </section>
+
+  <!-- ============ PODPISY ============ -->
+  <section id="podpisy">
+    <p class="topic">Git · Podpisy kryptograficzne</p>
+    <h2 class="head">Dlaczego commity trzeba podpisywać</h2>
+
+    <p>
+      Pola <code>author</code> i <code>committer</code> w Gicie to <strong>zwykły tekst, którego
+      nikt nie weryfikuje</strong>. Każdy może ustawić sobie Twoje imię i adres, zrobić commit
+      i wypchnąć go do repozytorium, do którego ma dostęp. W historii będzie wyglądał jak Twój.
+    </p>
+    <pre>git config user.name "Linus Torvalds"
+git config user.email "torvalds@linux-foundation.org"
+git commit -m "cokolwiek"   <span class="c">← i historia mówi, że to on</span></pre>
+    <p>
+      Podpis kryptograficzny to rozwiązuje: commit zostaje podpisany kluczem prywatnym,
+      a GitHub weryfikuje go kluczem publicznym i oznacza plakietką <strong>Verified</strong>.
+    </p>
+
+    <h3>SSH czy GPG</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th></th><th>Podpis SSH</th><th>Podpis GPG</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Klucz</strong></td><td>ten sam, co do logowania</td><td>osobny klucz do wygenerowania</td></tr>
+          <tr><td><strong>Konfiguracja</strong></td><td>kilka linii</td><td>klucz, agent, wygasanie, backup</td></tr>
+          <tr><td><strong>Wsparcie Git</strong></td><td>od wersji 2.34 (2021)</td><td>od zawsze</td></tr>
+          <tr><td><strong>Sieć zaufania</strong></td><td>brak</td><td>jest (rzadko używana)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Wybraliśmy <strong>SSH</strong>: jeden klucz <code>ed25519</code> obsługuje logowanie
+      <em>i</em> podpisywanie. GPG wciąż spotyka się w firmach, więc warto wiedzieć, że istnieje.
+    </p>
+
+    <div class="trap">
+      <span class="label">Klucz uwierzytelniający ≠ klucz podpisujący</span>
+      <p>
+        Choć u nas to fizycznie <strong>ten sam plik</strong>, GitHub traktuje te role jako
+        dwa osobne wpisy. Klucz dodany tylko jako <em>Authentication key</em> pozwoli robić
+        <code>push</code>, ale commity będą oznaczone <strong>Unverified</strong> — GitHub nie
+        wie, że wolno mu tym kluczem weryfikować podpisy. Trzeba dodać go <em>drugi raz</em>
+        jako <em>Signing key</em>.
+      </p>
+    </div>
+
+    <h3>ssh-agent — bez niego passphrase przy każdej operacji</h3>
+    <p>
+      Klucz chroniony hasłem jest bezpieczny, ale bez agenta Windows pyta o nie przy każdym
+      pushu i każdym commicie. Usługa <code>ssh-agent</code> jest domyślnie
+      <strong>wyłączona</strong> — trzeba ją włączyć i ustawić na <code>Automatic</code>.
+    </p>
+    <p>
+      <strong>Subtelniejsza pułapka:</strong> na Windowsie są <em>dwa różne</em>
+      <code>ssh.exe</code> — systemowy OpenSSH i ten dołączony do Git for Windows. Git domyślnie
+      używa swojego, który <strong>nie rozmawia z windowsową usługą</strong>. Włączasz agenta,
+      wczytujesz klucz, a Git dalej pyta o hasło. Lekarstwo:
+    </p>
+    <pre>git config --global core.sshCommand "C:/Windows/System32/OpenSSH/ssh.exe"</pre>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Po co podpisywać commity, skoro Git i tak zapisuje autora?</p>
+      <p class="a">
+        Bo pole autora to niezweryfikowany tekst — każdy może się pod kogoś podszyć.
+        Podpis kryptograficzny dowodzi, że commit pochodzi od posiadacza klucza prywatnego.
+        Ma to znaczenie przy audycie i przy atakach na łańcuch dostaw: w repozytorium
+        z wymuszonymi podpisami podrzucony commit zostanie odrzucony.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ SEKRETY ============ -->
+  <section id="sekrety">
+    <p class="topic">Bezpieczeństwo · Repozytorium</p>
+    <h2 class="head">Sekret w repozytorium zostaje tam na zawsze</h2>
+
+    <div class="ours">
+      <span class="label">Zdarzyło się u nas</span>
+      <p>
+        Przy pierwszym <code>git add -A</code> do commita podczepił się plik
+        <code>github-recovery-codes.txt</code> — <strong>kody zapasowe 2FA</strong>, zapisane
+        wcześniej na pulpicie. Kto ma te kody, omija dwuskładnikowe uwierzytelnianie i przejmuje
+        konto. Plik został wyjęty przed commitem i dopisany do <code>.gitignore</code>.
+      </p>
+    </div>
+
+    <h3>Dlaczego usunięcie pliku nie wystarcza</h3>
+    <p>
+      Git przechowuje <strong>całą historię</strong>. Skasowanie pliku kolejnym commitem usuwa
+      go z bieżącego stanu, ale <strong>zawartość zostaje w historii</strong> i da się ją
+      odczytać jedną komendą. Jeśli sekret trafił na publiczne repozytorium, należy przyjąć,
+      że <strong>wyciekł</strong>: boty skanują nowe commity na GitHubie w czasie liczonym
+      w sekundach.
+    </p>
+    <p>
+      Właściwa reakcja to <strong>unieważnienie sekretu</strong> — zmiana hasła, rotacja
+      tokenu, wygenerowanie nowych kodów — a dopiero potem czyszczenie historii
+      (<code>git filter-repo</code>). Kolejność ma znaczenie: czyszczenie historii bez rotacji
+      to iluzja bezpieczeństwa.
+    </p>
+
+    <ul class="plain">
+      <li><strong><code>.gitignore</code> piszesz przed pierwszym commitem</strong>, nie po.</li>
+      <li>Sekrety nie mieszkają w katalogu projektu — wszystko w nim trafia pod kontrolę Gita.</li>
+      <li><code>git status</code> przed <code>commit</code> — przejrzyj listę, nie ufaj <code>add -A</code> w ciemno.</li>
+      <li>W CI sekrety idą przez mechanizm sekretów (GitHub Secrets, Jenkins Credentials), nigdy do repo.</li>
+    </ul>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Hasło do bazy trafiło do publicznego repozytorium. Co robisz?</p>
+      <p class="a">
+        Najpierw <strong>zmieniam hasło</strong> — od momentu publikacji trzeba je uznać za
+        skompromitowane, bo boty skanują nowe commity w kilka sekund. Dopiero potem czyszczę
+        historię i dodaję plik do <code>.gitignore</code>. Na koniec sprawdzam logi dostępu pod
+        kątem nieautoryzowanego użycia i wprowadzam skanowanie sekretów w pipeline, żeby
+        wychwycić kolejny taki przypadek automatycznie.
       </p>
     </div>
   </section>

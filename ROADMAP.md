@@ -162,14 +162,16 @@ REST API z dokumentacją OpenAPI/Swagger, healthcheck, endpoint resetu danych te
 Szacunki zakładają pracę po godzinach (2–3 h dziennie). „Sesja" = jedno nasze wspólne posiedzenie.
 
 ### Faza 0 — Fundamenty środowiska  ⏱️ 1–2 sesje
-- [ ] JDK 25 LTS — instalacja, `JAVA_HOME`, weryfikacja
-- [ ] Node 22/24 LTS (pod Playwright w Fazie 10)
-- [ ] Docker Desktop + WSL2
-- [ ] Maven — podbicie, konfiguracja
-- [ ] IDE (IntelliJ IDEA) — pluginy, formatter, ustawienia
-- [ ] Git — konfiguracja, SSH key, GPG signing commitów
-- [ ] GitHub — repo, branch protection, konwencje commitów (Conventional Commits)
-- [ ] `.gitignore`, `.editorconfig`, README v0
+- [x] JDK 25 LTS (Temurin 25.0.3) — instalacja, `JAVA_HOME`, weryfikacja
+- [x] Node 24.18.0 LTS (pod Playwright w Fazie 10)
+- [x] Docker Desktop 29.6.1 + WSL2 (Ubuntu 26.04 LTS)
+- [x] Maven 3.9.16 — podbicie, `MAVEN_HOME`
+- [x] IntelliJ IDEA 2026.2.1 (produkt zunifikowany)
+- [x] Git — konfiguracja, klucz SSH ed25519, podpisywanie commitów
+- [x] GitHub — repozytorium publiczne, Conventional Commits
+- [x] `.gitignore`, `.gitattributes`, `.editorconfig`, README v0
+- [ ] Branch protection / ruleset na `main`
+- [ ] IntelliJ — pluginy, formatter, import ustawień
 
 **Nauczysz się:** dlaczego LTS, jak działa Selenium Manager, po co podpisywać commity, trunk-based vs GitFlow.
 
@@ -378,7 +380,7 @@ Rozszerzenia tych decyzji trafiają do `docs/adr/` jako Architecture Decision Re
 
 | Faza | Status | Data ukończenia |
 |---|---|---|
-| 0 — Fundamenty | ⬜ nie rozpoczęta | |
+| 0 — Fundamenty | 🟡 prawie gotowa | |
 | 1 — SUT | ⬜ | |
 | 2 — Szkielet Selenium | ⬜ | |
 | 3 — Pokrycie UI | ⬜ | |
