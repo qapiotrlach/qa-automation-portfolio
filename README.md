@@ -48,6 +48,19 @@ wprowadzać defekty jako materiał do nauki.
 - Node.js 24 LTS
 - Docker
 
+## Konfiguracja lokalna
+
+WSL2 domyślnie rezerwuje połowę RAM. Limity ustawia się w `%USERPROFILE%\.wslconfig`:
+
+```ini
+[wsl2]
+memory=4GB
+processors=4
+swap=2GB
+```
+
+Po zmianie: `wsl --shutdown`.
+
 ---
 
 Autor: **Piotr Lach** · [github.com/qapiotrlach](https://github.com/qapiotrlach)
