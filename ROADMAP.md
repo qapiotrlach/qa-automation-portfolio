@@ -170,13 +170,15 @@ Szacunki zakładają pracę po godzinach (2–3 h dziennie). „Sesja" = jedno n
 - [x] Git — konfiguracja, klucz SSH ed25519, podpisywanie commitów
 - [x] GitHub — repozytorium publiczne, Conventional Commits
 - [x] `.gitignore`, `.gitattributes`, `.editorconfig`, README v0
-- [ ] Branch protection / ruleset na `main`
+- [x] Branch protection: ruleset na `main` (PR, podpisy, liniowa historia, squash)
 - [ ] IntelliJ — pluginy, formatter, import ustawień
 
 **Nauczysz się:** dlaczego LTS, jak działa Selenium Manager, po co podpisywać commity, trunk-based vs GitFlow.
 
 ### Faza 1 — SUT: aplikacja demo  ⏱️ 4–6 sesji
-- [ ] Backend: REST API + baza + migracje + OpenAPI
+- [x] Szkielet: Spring Boot 4.1.1 / Java 25, PostgreSQL 18 w Dockerze, healthcheck
+- [x] Backend: API produktów (CRUD), migracje Flyway, walidacja, OpenAPI
+- [ ] Backend: pozostałe REST API + baza + migracje
 - [ ] Frontend: SPA z routingiem
 - [ ] Auth (5.1) + katalog produktów + koszyk (5.6, wersja minimalna)
 - [ ] Docker: `Dockerfile` backend, `Dockerfile` frontend, `docker-compose.yml`
@@ -380,8 +382,8 @@ Rozszerzenia tych decyzji trafiają do `docs/adr/` jako Architecture Decision Re
 
 | Faza | Status | Data ukończenia |
 |---|---|---|
-| 0 — Fundamenty | 🟡 prawie gotowa | |
-| 1 — SUT | ⬜ | |
+| 0 — Fundamenty | ✅ gotowa | 2026-09-22 |
+| 1 — SUT | 🟡 w toku | |
 | 2 — Szkielet Selenium | ⬜ | |
 | 3 — Pokrycie UI | ⬜ | |
 | 4 — API | ⬜ | |
