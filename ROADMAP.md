@@ -90,6 +90,7 @@ qa-playground/
 │   │   ├── data/               # buildery danych testowych
 │   │   └── tests/              # właściwe testy
 │   └── pom.xml
+├── tests-api/                  # testy REST API (RestAssured + JUnit 5)
 ├── tests-playwright/           # framework TypeScript + Playwright (Faza 10)
 ├── tests-perf/                 # k6 (Faza 9)
 ├── docs/                       # strategia testów, test plan, przypadki, ADR
