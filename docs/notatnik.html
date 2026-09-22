@@ -451,6 +451,11 @@
       <li><span class="tag">GIT</span><a href="#git">Git — konfiguracja</a></li>
       <li><span class="tag">GIT</span><a href="#podpisy">Podpisywanie commitów</a></li>
       <li><span class="tag">GIT</span><a href="#sekrety">Sekrety w repozytorium</a></li>
+      <li><span class="tag">GIT</span><a href="#branching">GitFlow a trunk-based</a></li>
+      <li><span class="tag">CI</span><a href="#pulapki-ci">Pułapki, które psują CI</a></li>
+      <li><span class="tag">BAZA</span><a href="#flyway">Migracje bazy (Flyway)</a></li>
+      <li><span class="tag">API</span><a href="#encje">Encje, DTO i pieniądze</a></li>
+      <li><span class="tag">API</span><a href="#bledy">Kontrakt błędów (RFC 9457)</a></li>
     </ol>
   </nav>
 
@@ -1358,6 +1363,285 @@ git commit -m "cokolwiek"   <span class="c">← i historia mówi, że to on</spa
         historię i dodaję plik do <code>.gitignore</code>. Na koniec sprawdzam logi dostępu pod
         kątem nieautoryzowanego użycia i wprowadzam skanowanie sekretów w pipeline, żeby
         wychwycić kolejny taki przypadek automatycznie.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ BRANCHING ============ -->
+  <section id="branching">
+    <p class="topic">Git · Strategie pracy z gałęziami</p>
+    <h2 class="head">GitFlow a trunk-based development</h2>
+
+    <p>
+      Pytanie „jaką strategię branchowania stosowaliście i dlaczego” pada na rozmowach bardzo
+      często. Odpowiedź „znam obie i w tym projekcie wybrałem tę, bo…” brzmi zupełnie inaczej
+      niż „robiliśmy tak, jak było”.
+    </p>
+
+    <h3>GitFlow</h3>
+    <pre>main        <span class="c">produkcja; każdy commit = wydana wersja</span>
+develop     <span class="c">integracja; tu spływa wszystko do następnego wydania</span>
+feature/*   <span class="c">od develop  → do develop</span>
+release/*   <span class="c">od develop  → do main ORAZ z powrotem do develop</span>
+hotfix/*    <span class="c">od main     → do main ORAZ z powrotem do develop</span></pre>
+
+    <p>
+      Powstał w 2010 roku dla oprogramowania wydawanego w wersjach, gdzie równolegle utrzymuje
+      się wersję 2.x i szykuje 3.0. Autor, Vincent Driessen, dopisał w 2020 roku do swojego
+      artykułu, że przy dostarczaniu ciągłym (continuous delivery) poleca prostszy przepływ.
+    </p>
+
+    <h3>Trunk-based development</h3>
+    <p>
+      Jedna główna gałąź, krótko żyjące gałęzie zadaniowe, szybkie scalanie. Jakości pilnuje
+      <strong>pipeline</strong>, nie dodatkowa gałąź: PR nie da się scalić, dopóki testy nie
+      przejdą. Rolę bufora, którą w GitFlow pełni <code>develop</code>, przejmują testy
+      automatyczne.
+    </p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Gałąź w GitFlow</th><th>Środowisko</th><th>Co testuje QA</th></tr></thead>
+        <tbody>
+          <tr><td><code>feature/*</code></td><td>lokalnie / środowisko PR</td><td>nową funkcję w izolacji</td></tr>
+          <tr><td><code>develop</code></td><td>test / dev</td><td>integrację: czy funkcje działają razem</td></tr>
+          <tr><td><code>release/*</code></td><td>staging / UAT</td><td>regresję przed wydaniem, „zamrożenie”</td></tr>
+          <tr><td><code>main</code></td><td>produkcja</td><td>smoke testy po wdrożeniu</td></tr>
+          <tr><td><code>hotfix/*</code></td><td>staging</td><td>poprawkę i regresję wokół niej</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="trap">
+      <span class="label">Dwa klasyczne błędy w GitFlow</span>
+      <p>
+        <strong>PR do złej gałęzi.</strong> <code>gh pr create</code> domyślnie celuje w
+        <code>main</code>, a w GitFlow zadanie idzie do <code>develop</code>. Trzeba podać
+        <code>--base develop</code>.
+      </p>
+      <p>
+        <strong>Zapomniany powrót hotfixa do <code>develop</code>.</strong> Poprawka trafia na
+        produkcję, ale nie wraca do gałęzi rozwojowej — i przy następnym wydaniu naprawiony błąd
+        wraca na produkcję.
+      </p>
+    </div>
+
+    <div class="ours">
+      <span class="label">Nasz wybór</span>
+      <p>
+        <strong>Trunk-based</strong>, bo projekt jest rozwijany w sposób ciągły, a nie wydawany
+        w wersjach. Doszła też przyczyna techniczna: mamy wymuszoną liniową historię i scalanie
+        wyłącznie przez squash. Squash z <code>develop</code> do <code>main</code> tworzy commit,
+        którego <code>develop</code> nie zna, więc gałęzie rozjeżdżają się po pierwszym wydaniu.
+        GitFlow zakłada zwykłe merge commity — czyli dokładnie to, co wyłączyliśmy.
+      </p>
+      <p>
+        Wydania pokazujemy tagami i GitHub Releases (<code>v0.1.0</code>, <code>v0.2.0</code>…),
+        co daje efekt „wydaję wersję” bez dodatkowej gałęzi.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Jaką strategię pracy z gałęziami stosowaliście?</p>
+      <p class="a">
+        Warto opisać przepływ <em>i</em> powiązać go z testowaniem: która gałąź trafiała na
+        które środowisko i jakie testy tam działały. Np. „na <code>develop</code> szła nocna
+        regresja, na <code>release</code> testy akceptacyjne, po wdrożeniu na <code>main</code>
+        smoke”. To pokazuje, że rozumiesz proces, a nie tylko komendy.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PULAPKI CI ============ -->
+  <section id="pulapki-ci">
+    <p class="topic">CI · Pułapki środowiskowe</p>
+    <h2 class="head">Drobiazgi, które wywracają build na agencie</h2>
+
+    <h3>Bit wykonywalności pliku</h3>
+    <p>
+      Windows nie ma uniksowego bitu wykonywalności, ale <strong>Git go przechowuje</strong>
+      i przenosi na inne systemy. Plik utworzony na Windowsie trafia do repozytorium jako
+      <code>100644</code>, czyli zwykły. Na agencie z Linuksem:
+    </p>
+    <pre>$ ./mvnw test
+<span class="bad">./mvnw: Permission denied</span></pre>
+    <p>Naprawa nie zmienia treści pliku, tylko jego tryb:</p>
+    <pre>git update-index --chmod=+x app/backend/mvnw
+
+<span class="c">przed:</span> 100644 bd8896b… mvnw
+<span class="c">po:</span>    <span class="good">100755</span> bd8896b… mvnw   <span class="c">← ten sam skrót treści</span></pre>
+
+    <h3>Kontener, który padł, jest niewidoczny</h3>
+    <p>
+      <code>docker compose ps</code> pokazuje tylko <strong>działające</strong> kontenery.
+      Gdy kontener wystartował i natychmiast się wywrócił, zobaczysz pustą listę i pomyślisz,
+      że nic się nie uruchomiło. Diagnoza zawsze wygląda tak samo:
+    </p>
+    <pre>docker ps -a          <span class="c">← STATUS pokaże "Exited (1)"</span>
+docker logs nazwa     <span class="c">← przyczyna prawie zawsze jest w logach</span></pre>
+
+    <div class="ours">
+      <span class="label">U nas · PostgreSQL 18 zmienił ścieżkę danych</span>
+      <p>
+        Do wersji 17 wolumen montowało się pod <code>/var/lib/postgresql/data</code> i tak podaje
+        każdy tutorial. Od <strong>18</strong> obraz trzyma dane w podkatalogu z numerem wersji,
+        żeby umożliwić <code>pg_upgrade</code>, i oczekuje montowania o poziom wyżej:
+        <code>/var/lib/postgresql</code>. Stara ścieżka powoduje wyjście z kodem 1 tuż po starcie.
+      </p>
+      <p>
+        To argument za <strong>przypinaniem wersji</strong> obrazów. Przy
+        <code>postgres:latest</code> ta awaria przyszłaby sama, w losowym momencie, bez żadnej
+        zmiany z Twojej strony.
+      </p>
+    </div>
+
+    <div class="trap">
+      <span class="label">Cudzysłowy w PowerShellu przy curl</span>
+      <p>
+        JSON przekazany do <code>curl.exe -d</code> wprost w PowerShellu rozpada się, zanim
+        dotrze do narzędzia — serwer odpowiada <code>400 Bad Request</code> i szuka się błędu
+        po stronie API, którego tam nie ma. Rozwiązanie: zapisz treść do pliku i użyj
+        <code>-d "@plik.json"</code>. Uwaga też na samo <code>curl</code> — w PowerShellu to
+        alias na <code>Invoke-WebRequest</code>, inne narzędzie o tej samej nazwie.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ FLYWAY ============ -->
+  <section id="flyway">
+    <p class="topic">Baza danych · Migracje</p>
+    <h2 class="head">Schemat bazy jako kod</h2>
+
+    <p>
+      Flyway wykonuje ponumerowane pliki SQL i zapisuje w tabeli
+      <code>flyway_schema_history</code>, co już zostało wykonane. Schemat każdego środowiska
+      jest dzięki temu odtwarzalny i wiadomo, w jakiej jest wersji.
+    </p>
+    <pre>V1__init.sql            <span class="c">tabela products</span>
+V2__seed_products.sql   <span class="c">dane startowe</span>
+<span class="c">format: V&lt;numer&gt;__&lt;opis&gt;.sql — dwa podkreślenia</span></pre>
+
+    <div class="trap">
+      <span class="label">Migracji nie edytuje się po wypchnięciu</span>
+      <p>
+        Flyway trzyma <strong>sumę kontrolną</strong> każdego pliku. Zmiana treści migracji,
+        która gdzieś już się wykonała, kończy się odmową startu aplikacji. Poprawki robi się
+        <em>nową</em> migracją. To celowe: inaczej historia schematu przestałaby być wiarygodna.
+      </p>
+    </div>
+
+    <h3><code>ddl-auto</code>: najważniejsze ustawienie JPA</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Wartość</th><th>Co robi</th><th>Kiedy</th></tr></thead>
+        <tbody>
+          <tr><td><code>validate</code></td><td>sprawdza zgodność encji ze schematem, nic nie zmienia</td><td><strong>nasz wybór</strong></td></tr>
+          <tr><td><code>update</code></td><td>Hibernate sam dokłada kolumny i tabele</td><td>wygodne i dyskwalifikujące w projekcie produkcyjnym</td></tr>
+          <tr><td><code>create-drop</code></td><td>tworzy schemat i kasuje przy zamknięciu</td><td>tylko testy jednostkowe</td></tr>
+          <tr><td><code>none</code></td><td>nic nie robi</td><td>gdy schematem zarządza wyłącznie migrator</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Przy <code>update</code> nikt nie wie, jaki jest faktyczny stan bazy, i nie da się go
+      odtworzyć na innym środowisku. Dla testera przekłada się to wprost na pytanie:
+      <em>czy środowisko testowe ma ten sam schemat co produkcja?</em>
+    </p>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Jak zapewniasz, że baza na środowisku testowym odpowiada produkcji?</p>
+      <p class="a">
+        Schemat jest wersjonowany migracjami w repozytorium i wykonywany tak samo na każdym
+        środowisku, a aplikacja startuje z <code>ddl-auto=validate</code>, więc niezgodność
+        encji ze schematem zatrzymuje start zamiast ujawnić się w trakcie testów. Różnicą
+        między środowiskami pozostają wtedy tylko dane, nie struktura.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ ENCJE ============ -->
+  <section id="encje">
+    <p class="topic">API · Model danych</p>
+    <h2 class="head">Encja, DTO i dlaczego pieniądze to nie <code>double</code></h2>
+
+    <h3>Encja musi być klasą, rekord nie wystarczy</h3>
+    <p>
+      Rekordy zastępują Lomboka, ale <strong>nie nadają się na encje JPA</strong>: rekord jest
+      niemutowalny i nie ma konstruktora bezargumentowego, a JPA tworzy obiekt pusty i dopiero
+      wypełnia go danymi z bazy. Rekordy zostają tam, gdzie pasują — w DTO.
+    </p>
+
+    <h3>Po co osobne DTO</h3>
+    <ul class="plain">
+      <li>Encja opisuje <strong>bazę</strong>, DTO opisuje <strong>kontrakt API</strong>. To dwie różne rzeczy, które zmieniają się z różnych powodów.</li>
+      <li>Zwracanie encji wprost sprawia, że każda zmiana kolumny natychmiast zmienia API — i psuje testy oraz klientów.</li>
+      <li>Pola wrażliwe (hasło, token) wyciekłyby do odpowiedzi automatycznie.</li>
+      <li>DTO wejściowe ma własną walidację, niezależną od ograniczeń bazy.</li>
+    </ul>
+
+    <div class="trap">
+      <span class="label">Pieniądze: <code>BigDecimal</code>, nigdy <code>double</code></span>
+      <p>
+        Liczby zmiennoprzecinkowe nie potrafią dokładnie zapisać ułamków dziesiętnych —
+        <code>0.1 + 0.2</code> daje <code>0.30000000000000004</code>. Przy koszyku i fakturach
+        kończy się to groszowymi rozjazdami, których nikt nie umie wyjaśnić. W bazie
+        <code>NUMERIC(10,2)</code>, w Javie <code>BigDecimal</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ BLEDY ============ -->
+  <section id="bledy">
+    <p class="topic">API · Kontrakt błędów</p>
+    <h2 class="head">Jeden kształt błędu w całym API (RFC 9457)</h2>
+
+    <p>
+      Domyślnie Spring zwraca ubogą odpowiedź, z której nie wynika, <em>co</em> jest nie tak:
+    </p>
+    <pre>{"timestamp":"...","status":400,"error":"Bad Request","path":"/api/products"}</pre>
+
+    <p>
+      Standard <strong>RFC 9457 (Problem Details)</strong> definiuje wspólny kształt błędu,
+      zwracany z typem <code>application/problem+json</code>:
+    </p>
+    <pre>{
+  "type":   "https://qa-playground/errors/validation",
+  "title":  "Blad walidacji",
+  "status": 400,
+  "detail": "Zadanie zawiera nieprawidlowe dane",
+  "instance": "/api/products",
+  "violations": [
+    { "field": "name",  "message": "Nazwa jest wymagana" },
+    { "field": "price", "message": "Cena nie moze byc ujemna" }
+  ]
+}</pre>
+
+    <p>
+      W Springu realizuje to <code>@RestControllerAdvice</code> z klasą <code>ProblemDetail</code>:
+      jedno miejsce zamienia wyjątki na odpowiedzi, zamiast obsługi błędów rozsianej po
+      kontrolerach.
+    </p>
+
+    <div class="ours">
+      <span class="label">Dlaczego to ważne dla testera</span>
+      <p>
+        Skoro każdy błąd ma ten sam kształt, w testach piszesz <strong>jedną</strong> metodę
+        sprawdzającą błędy zamiast dopasowywać się do innego formatu przy każdym endpoencie.
+        Pole <code>type</code> jest stabilnym identyfikatorem rodzaju błędu — asercja na nim nie
+        pęknie, gdy ktoś poprawi literówkę w komunikacie dla użytkownika.
+      </p>
+    </div>
+
+    <div class="qa">
+      <span class="label">Pytanie rekrutacyjne</span>
+      <p class="q">Na co zwracasz uwagę, testując obsługę błędów w API?</p>
+      <p class="a">
+        Czy kod odpowiedzi jest właściwy (400 przy błędnych danych, 404 przy braku zasobu,
+        409 przy konflikcie), czy kształt błędu jest spójny w całym API, czy komunikat nie
+        ujawnia szczegółów implementacji, np. zapytań SQL i stack trace, oraz czy odpowiedź
+        zawiera informację wystarczającą do naprawy — na przykład które pole jest nieprawidłowe.
       </p>
     </div>
   </section>
